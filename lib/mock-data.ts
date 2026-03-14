@@ -271,6 +271,7 @@ export const documents: Document[] = [
     size: "2.4 MB",
     uploadedAt: "2025-10-15",
     projectId: "proj-1",
+    fileUrl: null,
   },
   {
     id: "doc-2",
@@ -279,6 +280,7 @@ export const documents: Document[] = [
     size: "890 KB",
     uploadedAt: "2025-06-01",
     projectId: "proj-1",
+    fileUrl: null,
   },
   {
     id: "doc-3",
@@ -287,6 +289,7 @@ export const documents: Document[] = [
     size: "124 KB",
     uploadedAt: "2026-01-01",
     projectId: "proj-1",
+    fileUrl: null,
   },
   {
     id: "doc-4",
@@ -295,6 +298,7 @@ export const documents: Document[] = [
     size: "124 KB",
     uploadedAt: "2026-02-01",
     projectId: "proj-1",
+    fileUrl: null,
   },
   {
     id: "doc-5",
@@ -303,6 +307,7 @@ export const documents: Document[] = [
     size: "8.7 MB",
     uploadedAt: "2026-01-20",
     projectId: "proj-2",
+    fileUrl: null,
   },
   {
     id: "doc-6",
@@ -311,6 +316,7 @@ export const documents: Document[] = [
     size: "1.2 MB",
     uploadedAt: "2025-12-31",
     projectId: "proj-3",
+    fileUrl: null,
   },
   {
     id: "doc-7",
@@ -319,6 +325,7 @@ export const documents: Document[] = [
     size: "4.5 MB",
     uploadedAt: "2025-08-15",
     projectId: "proj-3",
+    fileUrl: null,
   },
 ]
 

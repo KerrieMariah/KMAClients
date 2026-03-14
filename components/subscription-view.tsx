@@ -36,7 +36,8 @@ import {
 } from "@/app/actions/stripe"
 import type { BillingItem } from "@/lib/mock-data"
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null
 
 function formatInterval(item: BillingItem) {
   if (item.type === "one_time") return "one-time"

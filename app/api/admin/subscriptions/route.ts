@@ -1,4 +1,5 @@
 import { verifyAdmin } from "@/lib/admin-auth"
+import Stripe from "stripe"
 import { stripe } from "@/lib/stripe"
 import { NextResponse, type NextRequest } from "next/server"
 import { z } from "zod"
@@ -33,7 +34,7 @@ async function createStripeProductAndPrice(
     metadata: { features: features.join(", ") },
   })
 
-  const priceParams: Record<string, unknown> = {
+  const priceParams: Stripe.PriceCreateParams = {
     product: product.id,
     unit_amount: Math.round(priceAmount * 100),
     currency: "usd",
@@ -42,10 +43,13 @@ async function createStripeProductAndPrice(
   if (type === "recurring") {
     const interval = billingCycle === "yearly" ? "year" : "month"
     const intervalCount = billingCycle === "quarterly" ? 3 : 1
-    priceParams.recurring = { interval, interval_count: intervalCount }
+    priceParams.recurring = {
+      interval: interval as Stripe.PriceCreateParams.Recurring["interval"],
+      interval_count: intervalCount,
+    }
   }
 
-  const price = await stripe.prices.create(priceParams as Parameters<typeof stripe.prices.create>[0])
+  const price = await stripe.prices.create(priceParams)
   return price.id
 }
 
