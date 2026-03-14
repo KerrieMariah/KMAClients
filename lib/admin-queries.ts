@@ -101,14 +101,56 @@ export async function getClientById(clientId: string) {
   }
 }
 
-export async function getAllBookings() {
+async function getProfilesMap() {
   const supabase = await createClient()
+  const { data } = await supabase.from("profiles").select("id, full_name, company")
+  const map: Record<string, { full_name: string; company: string }> = {}
+  for (const p of data ?? []) {
+    map[p.id] = { full_name: p.full_name ?? "Unnamed", company: p.company ?? "" }
+  }
+  return map
+}
 
-  const { data, error } = await supabase
-    .from("bookings")
-    .select("*, profiles(full_name, company)")
-    .order("date", { ascending: false })
+export async function getAllProjects() {
+  const supabase = await createClient()
+  const [{ data, error }, profiles] = await Promise.all([
+    supabase.from("projects").select("*").order("created_at", { ascending: false }),
+    getProfilesMap(),
+  ])
 
   if (error || !data) return []
-  return data
+  return data.map((p) => ({ ...p, profiles: profiles[p.user_id] ?? null }))
+}
+
+export async function getAllWebsites() {
+  const supabase = await createClient()
+  const [{ data, error }, profiles] = await Promise.all([
+    supabase.from("websites").select("*").order("created_at", { ascending: false }),
+    getProfilesMap(),
+  ])
+
+  if (error || !data) return []
+  return data.map((w) => ({ ...w, profiles: profiles[w.user_id] ?? null }))
+}
+
+export async function getAllBillingItems() {
+  const supabase = await createClient()
+  const [{ data, error }, profiles] = await Promise.all([
+    supabase.from("billing_items").select("*").order("created_at", { ascending: false }),
+    getProfilesMap(),
+  ])
+
+  if (error || !data) return []
+  return data.map((b) => ({ ...b, profiles: profiles[b.user_id] ?? null }))
+}
+
+export async function getAllDocuments() {
+  const supabase = await createClient()
+  const [{ data, error }, profiles] = await Promise.all([
+    supabase.from("documents").select("*").order("uploaded_at", { ascending: false }),
+    getProfilesMap(),
+  ])
+
+  if (error || !data) return []
+  return data.map((d) => ({ ...d, profiles: profiles[d.user_id] ?? null }))
 }

@@ -6,6 +6,10 @@ import { AdminSidebar } from "@/components/admin-sidebar"
 import { ClientTable } from "@/components/admin/client-table"
 import { ClientDetail } from "@/components/admin/client-detail"
 import { ProductsManager } from "@/components/admin/products-manager"
+import { AllProjects } from "@/components/admin/all-projects"
+import { AllWebsites } from "@/components/admin/all-websites"
+import { AllBilling } from "@/components/admin/all-billing"
+import { AllDocuments } from "@/components/admin/all-documents"
 
 interface AdminPortalProps {
   initialClients: any[]
@@ -85,6 +89,22 @@ export function AdminPortal({ initialClients, currentUser }: AdminPortalProps) {
 
     if (activeSection === "products") {
       return <ProductsManager />
+    }
+
+    if (activeSection === "projects") {
+      return <AllProjects onSelectClient={handleSelectClient} />
+    }
+
+    if (activeSection === "websites") {
+      return <AllWebsites onSelectClient={handleSelectClient} />
+    }
+
+    if (activeSection === "billing") {
+      return <AllBilling onSelectClient={handleSelectClient} />
+    }
+
+    if (activeSection === "documents") {
+      return <AllDocuments onSelectClient={handleSelectClient} />
     }
 
     return (

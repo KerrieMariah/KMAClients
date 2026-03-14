@@ -6,7 +6,6 @@ import {
   Globe,
   CreditCard,
   FileText,
-  CalendarClock,
   LogOut,
   ChevronUp,
   ArrowLeftRight,
@@ -42,10 +41,9 @@ const adminNav = [
   { title: "Websites", icon: Globe, id: "websites" },
 ]
 
-const manageNav = [
-  { title: "Subscriptions", icon: CreditCard, id: "subscriptions" },
+const detailsNav = [
+  { title: "Billing", icon: CreditCard, id: "billing" },
   { title: "Documents", icon: FileText, id: "documents" },
-  { title: "Bookings", icon: CalendarClock, id: "bookings" },
 ]
 
 export function AdminSidebar({
@@ -79,7 +77,7 @@ export function AdminSidebar({
         </div>
       </SidebarHeader>
 
-      <SidebarSeparator />
+      <SidebarSeparator className="mx-0" />
 
       <SidebarContent className="px-2 py-2">
         <SidebarGroup>
@@ -110,7 +108,7 @@ export function AdminSidebar({
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {manageNav.map((item) => (
+              {detailsNav.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
                     isActive={activeSection === item.id}

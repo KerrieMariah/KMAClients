@@ -1,5 +1,12 @@
 import { verifyAdmin } from "@/lib/admin-auth"
-import { getAllClients, getClientById } from "@/lib/admin-queries"
+import {
+  getAllClients,
+  getClientById,
+  getAllProjects,
+  getAllWebsites,
+  getAllBillingItems,
+  getAllDocuments,
+} from "@/lib/admin-queries"
 import { NextResponse, type NextRequest } from "next/server"
 
 export async function GET(request: NextRequest) {
@@ -10,8 +17,7 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type")
 
   if (type === "clients") {
-    const clients = await getAllClients()
-    return NextResponse.json(clients)
+    return NextResponse.json(await getAllClients())
   }
 
   if (type === "client") {
@@ -20,6 +26,22 @@ export async function GET(request: NextRequest) {
     const client = await getClientById(id)
     if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 })
     return NextResponse.json(client)
+  }
+
+  if (type === "projects") {
+    return NextResponse.json(await getAllProjects())
+  }
+
+  if (type === "websites") {
+    return NextResponse.json(await getAllWebsites())
+  }
+
+  if (type === "billing") {
+    return NextResponse.json(await getAllBillingItems())
+  }
+
+  if (type === "documents") {
+    return NextResponse.json(await getAllDocuments())
   }
 
   return NextResponse.json({ error: "Invalid type" }, { status: 400 })

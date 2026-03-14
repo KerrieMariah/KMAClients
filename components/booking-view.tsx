@@ -1,11 +1,18 @@
 "use client"
 
-import { Video, Clock, Calendar as CalendarIcon } from "lucide-react"
+import { useEffect } from "react"
+import { Video, Clock } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-const TIDYCAL_URL = process.env.NEXT_PUBLIC_TIDYCAL_URL ?? ""
-
 export function BookingView() {
+  useEffect(() => {
+    if (document.querySelector('script[src="https://asset-tidycal.b-cdn.net/js/embed.js"]')) return
+    const script = document.createElement("script")
+    script.src = "https://asset-tidycal.b-cdn.net/js/embed.js"
+    script.async = true
+    document.body.appendChild(script)
+  }, [])
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -19,32 +26,14 @@ export function BookingView() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          {TIDYCAL_URL ? (
-            <Card className="border-border bg-card shadow-none overflow-hidden">
-              <CardContent className="p-0">
-                <iframe
-                  src={TIDYCAL_URL}
-                  title="Book a Call"
-                  className="w-full border-0"
-                  style={{ minHeight: "680px" }}
-                />
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="border-border bg-card shadow-none">
-              <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="flex size-14 items-center justify-center rounded-full bg-secondary">
-                  <CalendarIcon className="size-7 text-muted-foreground" />
-                </div>
-                <p className="mt-4 text-lg font-medium text-foreground">
-                  Booking not available
-                </p>
-                <p className="mt-1 max-w-sm text-sm text-muted-foreground leading-relaxed">
-                  The scheduling link is not configured yet. Please contact us directly to schedule a call.
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          <Card className="border-border bg-card shadow-none overflow-hidden">
+            <CardContent className="p-0">
+              <div
+                className="tidycal-embed"
+                data-path="kerriemariah/15-minute-meeting"
+              />
+            </CardContent>
+          </Card>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -71,9 +60,9 @@ export function BookingView() {
                   <Clock className="size-4 text-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">30 minutes</p>
+                  <p className="text-sm font-medium text-foreground">15 minutes</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Standard consultation length. Longer sessions available.
+                    Quick consultation. Longer sessions available on request.
                   </p>
                 </div>
               </div>

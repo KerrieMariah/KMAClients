@@ -29,6 +29,7 @@ CREATE POLICY "admin_full_access_products" ON public.products FOR ALL
 ALTER TABLE public.subscriptions RENAME TO billing_items;
 
 -- Add new columns to billing_items
+ALTER TABLE public.billing_items ADD COLUMN IF NOT EXISTS name text;
 ALTER TABLE public.billing_items ADD COLUMN IF NOT EXISTS type text DEFAULT 'recurring' CHECK (type IN ('one_time', 'recurring'));
 ALTER TABLE public.billing_items ADD COLUMN IF NOT EXISTS product_id uuid REFERENCES public.products(id) ON DELETE SET NULL;
 ALTER TABLE public.billing_items ADD COLUMN IF NOT EXISTS end_date date;
