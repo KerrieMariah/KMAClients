@@ -115,7 +115,13 @@ export function ClientPortal({ data }: { data: PortalData }) {
         return <WebsitesView websites={data.websites} />
       case "billing":
       case "subscription":
-        return <SubscriptionView billingItems={data.billingItems} onNavigate={handleNavigate} />
+        return (
+          <SubscriptionView
+            billingItems={data.billingItems}
+            invoices={data.documents.filter((d) => d.type === "invoice")}
+            onNavigate={handleNavigate}
+          />
+        )
       case "documents":
         return (
           <DocumentsView

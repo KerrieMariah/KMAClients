@@ -25,12 +25,12 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-primary p-12">
         <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-lg bg-accent">
-            <span className="text-sm font-bold text-accent-foreground">K</span>
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col items-start leading-none">
+              <span className="text-2xl font-extrabold text-accent tracking-wider">KMA</span>
+              <span className="text-[12px] font-medium text-white tracking-[0.2em] uppercase">Clients</span>
+            </div>
           </div>
-          <span className="text-lg font-semibold text-primary-foreground tracking-tight">
-            KMAClients
-          </span>
         </div>
 
         <div className="max-w-md">
@@ -65,11 +65,11 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
       <div className="flex w-full flex-1 flex-col items-center justify-center bg-background px-6 lg:w-1/2">
         <div className="lg:hidden mb-10 flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-lg bg-primary">
-            <span className="text-sm font-bold text-primary-foreground">K</span>
+            <div className="flex flex-col items-start leading-none">
+              <span className="text-2xl font-extrabold text-accent tracking-wider">KMA</span>
+              <span className="text-[12px] font-medium text-white tracking-[0.2em] uppercase">Clients</span>
+            </div>
           </div>
-          <span className="text-lg font-semibold text-foreground tracking-tight">
-            KMAClients
-          </span>
         </div>
 
         <div className="w-full max-w-sm">

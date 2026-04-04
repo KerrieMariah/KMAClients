@@ -65,14 +65,12 @@ export function AdminSidebar({
     <Sidebar>
       <SidebarHeader className="p-5">
         <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-accent">
-            <span className="text-sm font-bold text-accent-foreground">K</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-sidebar-foreground tracking-tight">
-              KMAClients
-            </span>
-            <span className="text-xs font-medium text-accent/80">Admin Panel</span>
+        <div className="flex items-center gap-4">
+            <div className="flex flex-col items-start leading-none">
+              <span className="text-2xl font-extrabold text-accent tracking-wider">KMA</span>
+              <span className="text-[12px] font-medium text-white tracking-[0.2em] uppercase">Clients</span>
+              <span className="text-[10px] font-medium text-white tracking-[0.2em] uppercase">Admin</span>
+            </div>
           </div>
         </div>
       </SidebarHeader>

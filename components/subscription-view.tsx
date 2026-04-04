@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { Check, CreditCard, Calendar, AlertTriangle, Package, ExternalLink, Loader2, Repeat, DollarSign } from "lucide-react"
+import { Check, CreditCard, Calendar, AlertTriangle, Package, ExternalLink, Loader2, Repeat, DollarSign, Receipt, Download } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,7 +34,7 @@ import {
   cancelBillingItem,
   reactivateBillingItem,
 } from "@/app/actions/stripe"
-import type { BillingItem } from "@/lib/mock-data"
+import type { BillingItem, Document } from "@/lib/mock-data"
 
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 const stripePromise = stripeKey ? loadStripe(stripeKey) : null
@@ -215,9 +215,11 @@ function BillingItemCard({
 
 export function SubscriptionView({
   billingItems,
+  invoices = [],
   onNavigate,
 }: {
   billingItems: BillingItem[]
+  invoices?: Document[]
   onNavigate?: (section: string) => void
 }) {
   const [checkoutItemId, setCheckoutItemId] = useState<string | null>(null)
@@ -340,6 +342,51 @@ export function SubscriptionView({
               />
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Invoices */}
+      {invoices.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            Invoices
+          </h2>
+          <Card className="border-border bg-card shadow-none">
+            <CardContent className="p-0">
+              <div className="divide-y divide-border">
+                {invoices.map((inv) => (
+                  <div key={inv.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex size-8 items-center justify-center rounded-lg bg-secondary shrink-0">
+                        <Receipt className="size-4 text-muted-foreground" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{inv.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(inv.uploadedAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    {inv.fileUrl && (
+                      <a
+                        href={inv.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent/80 transition-colors shrink-0"
+                      >
+                        <Download className="size-3" />
+                        View
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
