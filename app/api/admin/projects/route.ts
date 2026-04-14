@@ -7,7 +7,7 @@ const projectSchema = z.object({
   name: z.string().min(1, "Project name is required"),
   description: z.string().optional().default(""),
   status: z.enum(["active", "in-progress", "completed", "paused"]).optional().default("active"),
-  progress: z.number().min(0).max(100).optional().default(0),
+  stage: z.enum(["draft", "review", "build_complete", "seo_started", "seo_ongoing"]).optional().default("draft"),
   start_date: z.string().nullable().optional().default(null),
   estimated_end: z.string().nullable().optional().default(null),
   technologies: z.array(z.string()).optional().default([]),
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 }
 
 const ALLOWED_PROJECT_FIELDS = [
-  "name", "description", "status", "progress", "start_date",
+  "name", "description", "status", "stage", "start_date",
   "estimated_end", "technologies", "image_url", "goals", "notion_url",
 ] as const
 

@@ -10,12 +10,13 @@ import {
   CheckCircle2,
   Clock,
   Phone,
+  Mail,
+  ShieldAlert,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
-import type { Project, Website, Subscription, Document, BillingItem } from "@/lib/mock-data"
+import { PROJECT_STAGES, type Project, type Website, type Subscription, type Document, type BillingItem } from "@/lib/mock-data"
 import Image from "next/image"
 
 export function DashboardView({
@@ -28,7 +29,7 @@ export function DashboardView({
   onNavigate,
   onSelectProject,
 }: {
-  currentUser: { name: string }
+  currentUser: { name: string; emergencyPhone?: string | null }
   projects: Project[]
   websites: Website[]
   subscription: Subscription | null
@@ -39,7 +40,8 @@ export function DashboardView({
 }) {
   const activeProjects = projects.filter((p) => p.status !== "completed")
   const onlineCount = websites.filter((w) => w.status === "online").length
-  const recentDocs = documents.slice(0, 3)
+  const nonInvoiceDocs = documents.filter((d) => d.type !== "invoice")
+  const recentDocs = nonInvoiceDocs.slice(0, 3)
 
   const [greeting, setGreeting] = useState("Welcome")
   useEffect(() => {
@@ -133,7 +135,7 @@ export function DashboardView({
               <FileText className="size-5 text-foreground" />
             </div>
             <div className="min-w-0">
-              <p className="text-2xl font-semibold text-foreground">{documents.length}</p>
+              <p className="text-2xl font-semibold text-foreground">{nonInvoiceDocs.length}</p>
               <p className="text-xs text-muted-foreground">Documents</p>
             </div>
           </CardContent>
@@ -208,12 +210,9 @@ export function DashboardView({
                         <p className="mt-1.5 text-xs text-muted-foreground line-clamp-1">
                           {project.description}
                         </p>
-                        <div className="flex items-center gap-3 mt-3">
-                          <Progress value={project.progress} className="flex-1 h-1.5" />
-                          <span className="text-xs font-semibold text-foreground shrink-0">
-                            {project.progress}%
-                          </span>
-                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {PROJECT_STAGES.find((s) => s.value === project.stage)?.label ?? "Draft"}
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -282,13 +281,49 @@ export function DashboardView({
               <Button
                 variant="outline"
                 className="justify-start h-10 border-border text-foreground hover:bg-secondary"
+                asChild
+              >
+                <a href="mailto:kerrie@kerriemariah.com">
+                  <Mail className="mr-2 size-4 text-muted-foreground" />
+                  Email Us
+                </a>
+              </Button>
+              <Button
+                variant="outline"
+                className="justify-start h-10 border-border text-foreground hover:bg-secondary"
                 onClick={() => onNavigate("billing")}
               >
                 <CreditCard className="mr-2 size-4 text-muted-foreground" />
-                Manage billing
+                Manage Billing
               </Button>
             </div>
           </div>
+
+          {currentUser.emergencyPhone && (
+            <div className="mt-6">
+              <Card className="border-border bg-card shadow-none">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-destructive/10 mt-0.5">
+                      <ShieldAlert className="size-4 text-destructive" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Your Priority Line
+                      </p>
+                      <p className="mt-1 text-lg font-semibold text-foreground tabular-nums tracking-tight">
+                        {currentUser.emergencyPhone}
+                      </p>
+                      <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
+                        This is your dedicated number for urgent, time-sensitive issues.
+                        It rings directly to our team — please reserve it for true emergencies.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
     </div>

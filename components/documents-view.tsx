@@ -49,7 +49,7 @@ export function DocumentsView({
           Documents
         </h1>
         <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-          Access all contracts, invoices, proposals, and project files.
+          Access all contracts, proposals, reports, and project files.
         </p>
       </div>
 

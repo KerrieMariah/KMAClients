@@ -1,5 +1,6 @@
 import { verifyAdmin } from "@/lib/admin-auth"
 import { createClient } from "@supabase/supabase-js"
+import { stripe } from "@/lib/stripe"
 import { NextResponse, type NextRequest } from "next/server"
 import { z } from "zod"
 
@@ -56,13 +57,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: authError.message }, { status: 400 })
   }
 
-  // Update the profile row created by the DB trigger
   if (authData.user) {
-    await supabase!
+    // Create a Stripe customer for this user
+    let stripeCustomerId: string | null = null
+    try {
+      const customer = await stripe.customers.create({
+        email,
+        name: full_name ?? undefined,
+        metadata: { supabase_user_id: authData.user.id },
+      })
+      stripeCustomerId = customer.id
+    } catch (stripeErr) {
+      console.error("Failed to create Stripe customer:", stripeErr)
+    }
+
+    // Update the profile row created by the DB trigger
+    await adminClient
       .from("profiles")
       .update({
         full_name: full_name ?? null,
         company: company ?? null,
+        ...(stripeCustomerId ? { stripe_customer_id: stripeCustomerId } : {}),
       })
       .eq("id", authData.user.id)
   }

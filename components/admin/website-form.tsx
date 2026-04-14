@@ -31,11 +31,8 @@ interface WebsiteFormProps {
     url: string
     status: string
     project_id: string | null
-    uptime: number
-    response_time: number
-    visitors_total: number
-    visitors_change: number
-    bounce_rate: number
+    ga_property_id: string | null
+    gsc_site_url: string | null
   } | null
 }
 
@@ -47,12 +44,8 @@ export function WebsiteForm({ open, onClose, onSuccess, clientId, projects, webs
   const [url, setUrl] = useState(website?.url ?? "")
   const [status, setStatus] = useState(website?.status ?? "online")
   const [projectId, setProjectId] = useState(website?.project_id ?? "none")
-  const [uptime, setUptime] = useState(website?.uptime ?? 99.9)
-  const [responseTime, setResponseTime] = useState(website?.response_time ?? 200)
-  const [visitors, setVisitors] = useState(website?.visitors_total ?? 0)
-  const [visitorsChange, setVisitorsChange] = useState(website?.visitors_change ?? 0)
-  const [bounceRate, setBounceRate] = useState(website?.bounce_rate ?? 0)
-
+  const [gaPropertyId, setGaPropertyId] = useState(website?.ga_property_id ?? "")
+  const [gscSiteUrl, setGscSiteUrl] = useState(website?.gsc_site_url ?? "")
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
@@ -63,11 +56,8 @@ export function WebsiteForm({ open, onClose, onSuccess, clientId, projects, webs
       url,
       status,
       project_id: projectId === "none" ? null : projectId,
-      uptime,
-      response_time: responseTime,
-      visitors_total: visitors,
-      visitors_change: visitorsChange,
-      bounce_rate: bounceRate,
+      ga_property_id: gaPropertyId || null,
+      gsc_site_url: gscSiteUrl || null,
     }
 
     try {
@@ -125,25 +115,17 @@ export function WebsiteForm({ open, onClose, onSuccess, clientId, projects, webs
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-3 border-t border-border pt-4">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Analytics Integrations</p>
             <div className="space-y-2">
-              <Label>Uptime (%)</Label>
-              <Input type="number" step="0.01" min="0" max="100" value={uptime} onChange={(e) => setUptime(Number(e.target.value))} />
+              <Label>GA4 Property ID</Label>
+              <Input value={gaPropertyId} onChange={(e) => setGaPropertyId(e.target.value)} placeholder="properties/123456789" />
             </div>
             <div className="space-y-2">
-              <Label>Response Time (ms)</Label>
-              <Input type="number" min="0" value={responseTime} onChange={(e) => setResponseTime(Number(e.target.value))} />
-            </div>
-            <div className="space-y-2">
-              <Label>Total Visitors</Label>
-              <Input type="number" min="0" value={visitors} onChange={(e) => setVisitors(Number(e.target.value))} />
-            </div>
-            <div className="space-y-2">
-              <Label>Visitor Change (%)</Label>
-              <Input type="number" step="0.1" value={visitorsChange} onChange={(e) => setVisitorsChange(Number(e.target.value))} />
-            </div>
-            <div className="space-y-2">
-              <Label>Bounce Rate (%)</Label>
-              <Input type="number" step="0.1" min="0" max="100" value={bounceRate} onChange={(e) => setBounceRate(Number(e.target.value))} />
+              <Label>Search Console Site URL</Label>
+              <Input value={gscSiteUrl} onChange={(e) => setGscSiteUrl(e.target.value)} placeholder="sc-domain:example.com or https://example.com/" />
             </div>
           </div>
 

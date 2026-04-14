@@ -15,6 +15,8 @@ const websiteSchema = z.object({
   bounce_rate: z.number().optional().default(0),
   top_referrers: z.array(z.any()).optional().default([]),
   traffic_by_country: z.array(z.any()).optional().default([]),
+  ga_property_id: z.string().nullable().optional().default(null),
+  gsc_site_url: z.string().nullable().optional().default(null),
 })
 
 export async function POST(request: NextRequest) {
@@ -40,6 +42,7 @@ export async function POST(request: NextRequest) {
 const ALLOWED_WEBSITE_FIELDS = [
   "name", "url", "status", "uptime", "last_checked", "response_time",
   "visitors_total", "visitors_change", "bounce_rate", "top_referrers", "traffic_by_country",
+  "ga_property_id", "gsc_site_url",
 ] as const
 
 export async function PATCH(request: NextRequest) {

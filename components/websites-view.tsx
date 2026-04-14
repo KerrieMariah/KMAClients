@@ -1,23 +1,23 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback, useEffect } from "react"
 import {
   CheckCircle2,
   XCircle,
   Wrench,
   ExternalLink,
-  Activity,
   Users,
   TrendingUp,
   TrendingDown,
-  ArrowUpRight,
-  Globe,
+  Eye,
+  Activity,
   ChevronDown,
   ChevronUp,
+  Loader2,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { WebsiteMetrics, type GAData } from "@/components/website-metrics"
 import type { Website } from "@/lib/mock-data"
 
 const statusConfig = {
@@ -42,19 +42,49 @@ const statusConfig = {
 }
 
 function formatNumber(num: number) {
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + "k"
-  }
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M"
+  if (num >= 1000) return (num / 1000).toFixed(1) + "k"
   return num.toString()
 }
 
 export function WebsitesView({ websites }: { websites: Website[] }) {
   const [expandedSite, setExpandedSite] = useState<string | null>(null)
+  const [siteGAData, setSiteGAData] = useState<Record<string, GAData>>({})
+  const [gaLoading, setGaLoading] = useState(true)
+
   const onlineCount = websites.filter((w) => w.status === "online").length
-  const totalVisitors = websites.reduce((a, w) => a + w.visitors.total, 0)
-  const avgBounce = websites.length > 0
-    ? (websites.reduce((a, w) => a + w.bounceRate, 0) / websites.length).toFixed(1)
-    : "0"
+  const sitesWithGA = websites.filter((w) => w.gaPropertyId)
+
+  const totalUsers = Object.values(siteGAData).reduce((a, d) => a + d.users, 0)
+  const totalSessions = Object.values(siteGAData).reduce((a, d) => a + d.sessions, 0)
+  const avgBounce = Object.keys(siteGAData).length > 0
+    ? (Object.values(siteGAData).reduce((a, d) => a + d.bounceRate, 0) / Object.keys(siteGAData).length).toFixed(1)
+    : "—"
+
+  const handleGAData = useCallback((siteId: string, data: GAData) => {
+    setSiteGAData((prev) => ({ ...prev, [siteId]: data }))
+  }, [])
+
+  useEffect(() => {
+    if (sitesWithGA.length === 0) {
+      setGaLoading(false)
+      return
+    }
+    let completed = 0
+    sitesWithGA.forEach(async (site) => {
+      try {
+        const res = await fetch(`/api/metrics/ga?websiteId=${site.id}`)
+        if (res.ok) {
+          const data = await res.json()
+          handleGAData(site.id, data)
+        }
+      } catch { /* silent */ } finally {
+        completed++
+        if (completed >= sitesWithGA.length) setGaLoading(false)
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="flex flex-col gap-8">
@@ -89,38 +119,61 @@ export function WebsitesView({ websites }: { websites: Website[] }) {
               <Users className="size-4 text-accent" />
               <p className="text-sm text-muted-foreground">Total Visitors</p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-foreground">
-              {formatNumber(totalVisitors)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Last 30 days</p>
+            {gaLoading ? (
+              <div className="mt-3 flex items-center gap-2">
+                <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Loading...</span>
+              </div>
+            ) : (
+              <>
+                <p className="mt-2 text-3xl font-semibold text-foreground tabular-nums">
+                  {formatNumber(totalUsers)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Last 30 days</p>
+              </>
+            )}
           </CardContent>
         </Card>
 
         <Card className="border-border bg-card shadow-none">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <ArrowUpRight className="size-4 text-success" />
+              <Activity className="size-4 text-accent" />
+              <p className="text-sm text-muted-foreground">Total Sessions</p>
+            </div>
+            {gaLoading ? (
+              <div className="mt-3 flex items-center gap-2">
+                <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Loading...</span>
+              </div>
+            ) : (
+              <>
+                <p className="mt-2 text-3xl font-semibold text-foreground tabular-nums">
+                  {formatNumber(totalSessions)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Last 30 days</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border bg-card shadow-none">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <Eye className="size-4 text-accent" />
               <p className="text-sm text-muted-foreground">Avg. Bounce Rate</p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-foreground">
-              {avgBounce}
-              <span className="text-base font-normal text-muted-foreground">%</span>
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card shadow-none">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <Activity className="size-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Avg. Response</p>
-            </div>
-            <p className="mt-2 text-3xl font-semibold text-foreground">
-              {websites.length > 0
-                ? Math.round(websites.reduce((a, w) => a + w.responseTime, 0) / websites.length)
-                : 0}
-              <span className="text-base font-normal text-muted-foreground">ms</span>
-            </p>
+            {gaLoading ? (
+              <div className="mt-3 flex items-center gap-2">
+                <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Loading...</span>
+              </div>
+            ) : (
+              <p className="mt-2 text-3xl font-semibold text-foreground tabular-nums">
+                {avgBounce}
+                <span className="text-base font-normal text-muted-foreground">%</span>
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -130,6 +183,7 @@ export function WebsitesView({ websites }: { websites: Website[] }) {
           const config = statusConfig[site.status]
           const StatusIcon = config.icon
           const isExpanded = expandedSite === site.id
+          const ga = siteGAData[site.id]
 
           return (
             <Card key={site.id} className="border-border bg-card shadow-none hover:shadow-sm transition-shadow">
@@ -155,29 +209,34 @@ export function WebsitesView({ websites }: { websites: Website[] }) {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-                    <div className="flex flex-col items-center">
-                      <span className="text-xs text-muted-foreground">Visitors</span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-sm font-semibold text-foreground">{formatNumber(site.visitors.total)}</span>
-                        {site.visitors.change > 0 ? (
-                          <TrendingUp className="size-3 text-success" />
-                        ) : (
-                          <TrendingDown className="size-3 text-destructive" />
-                        )}
+                    {ga ? (
+                      <>
+                        <div className="flex flex-col items-center">
+                          <span className="text-xs text-muted-foreground">Visitors</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm font-semibold text-foreground tabular-nums">{formatNumber(ga.users)}</span>
+                            {ga.usersChange > 0 ? (
+                              <TrendingUp className="size-3 text-success" />
+                            ) : ga.usersChange < 0 ? (
+                              <TrendingDown className="size-3 text-destructive" />
+                            ) : null}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span className="text-xs text-muted-foreground">Sessions</span>
+                          <span className="text-sm font-semibold text-foreground tabular-nums">{formatNumber(ga.sessions)}</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span className="text-xs text-muted-foreground">Bounce</span>
+                          <span className="text-sm font-semibold text-foreground tabular-nums">{ga.bounceRate}%</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <Loader2 className="size-3 animate-spin text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Loading...</span>
                       </div>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <span className="text-xs text-muted-foreground">Bounce</span>
-                      <span className="text-sm font-semibold text-foreground">{site.bounceRate}%</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <span className="text-xs text-muted-foreground">Uptime</span>
-                      <span className="text-sm font-semibold text-foreground">{site.uptime}%</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <span className="text-xs text-muted-foreground">Speed</span>
-                      <span className="text-sm font-semibold text-foreground">{site.responseTime}ms</span>
-                    </div>
+                    )}
                     <Badge variant="secondary" className={config.badgeClass}>{config.label}</Badge>
                     {isExpanded ? (
                       <ChevronUp className="size-4 text-muted-foreground" />
@@ -189,69 +248,10 @@ export function WebsitesView({ websites }: { websites: Website[] }) {
 
                 {isExpanded && (
                   <div className="border-t border-border px-5 pb-5 pt-4">
-                    <div className="grid gap-5 sm:grid-cols-2">
-                      <div>
-                        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-                          Traffic Sources
-                        </h4>
-                        <div className="flex flex-col gap-2.5">
-                          {site.topReferrers.map((ref) => (
-                            <div key={ref.source} className="flex flex-col gap-1.5">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-foreground">{ref.source}</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-muted-foreground">{formatNumber(ref.visits)}</span>
-                                  <span className="text-xs font-medium text-foreground w-8 text-right">{ref.percentage}%</span>
-                                </div>
-                              </div>
-                              <Progress value={ref.percentage} className="h-1" />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-                          Visitors by Country
-                        </h4>
-                        <div className="flex flex-col gap-2.5">
-                          {site.trafficByCountry.map((country) => (
-                            <div key={country.country} className="flex flex-col gap-1.5">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <Globe className="size-3.5 text-muted-foreground" />
-                                  <span className="text-sm text-foreground">{country.country}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-muted-foreground">{formatNumber(country.visits)}</span>
-                                  <span className="text-xs font-medium text-foreground w-8 text-right">{country.percentage}%</span>
-                                </div>
-                              </div>
-                              <Progress value={country.percentage} className="h-1" />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-5 flex flex-wrap items-center gap-6 rounded-lg bg-secondary/50 p-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">30-Day Visitors</p>
-                        <p className="text-lg font-semibold text-foreground">{site.visitors.total.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Change</p>
-                        <p className={`text-lg font-semibold ${site.visitors.change > 0 ? "text-success" : "text-destructive"}`}>
-                          {site.visitors.change > 0 ? "+" : ""}{site.visitors.change}%
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Bounce Rate</p>
-                        <p className="text-lg font-semibold text-foreground">{site.bounceRate}%</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Last Checked</p>
-                        <p className="text-sm font-medium text-foreground">{site.lastChecked}</p>
-                      </div>
-                    </div>
+                    <WebsiteMetrics
+                      website={site}
+                      onGAData={(data) => handleGAData(site.id, data)}
+                    />
                   </div>
                 )}
               </CardContent>

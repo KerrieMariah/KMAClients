@@ -40,6 +40,16 @@ export async function POST(request: NextRequest) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session
       const billingItemId = session.metadata?.billing_item_id ?? session.metadata?.subscription_id
+      const stripeCustomerId = session.customer as string
+      const supabaseUserId = session.metadata?.supabase_user_id
+
+      // Ensure the profile always has the Stripe customer ID
+      if (supabaseUserId && stripeCustomerId) {
+        await supabase
+          .from("profiles")
+          .update({ stripe_customer_id: stripeCustomerId })
+          .eq("id", supabaseUserId)
+      }
 
       if (session.mode === "subscription") {
         const stripeSubscriptionId = session.subscription as string
@@ -51,7 +61,7 @@ export async function POST(request: NextRequest) {
             .from("billing_items")
             .update({
               stripe_subscription_id: stripeSubscriptionId,
-              stripe_customer_id: session.customer as string,
+              stripe_customer_id: stripeCustomerId,
               status: "active",
               next_billing: currentPeriodEnd.toISOString().split("T")[0],
             })
@@ -62,7 +72,7 @@ export async function POST(request: NextRequest) {
           await supabase
             .from("billing_items")
             .update({
-              stripe_customer_id: session.customer as string,
+              stripe_customer_id: stripeCustomerId,
               status: "paid",
             })
             .eq("id", billingItemId)

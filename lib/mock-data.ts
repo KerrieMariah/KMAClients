@@ -1,9 +1,19 @@
+export const PROJECT_STAGES = [
+  { value: "draft", label: "Initial Draft" },
+  { value: "review", label: "Under Review" },
+  { value: "build_complete", label: "Website Build Complete" },
+  { value: "seo_started", label: "SEO Implementation Started" },
+  { value: "seo_ongoing", label: "SEO Ongoing" },
+] as const
+
+export type ProjectStage = (typeof PROJECT_STAGES)[number]["value"]
+
 export type Project = {
   id: string
   name: string
   description: string
   status: "active" | "in-progress" | "completed" | "paused"
-  progress: number
+  stage: ProjectStage
   startDate: string
   estimatedEnd: string
   technologies: string[]
@@ -27,6 +37,8 @@ export type Website = {
   bounceRate: number
   topReferrers: { source: string; visits: number; percentage: number }[]
   trafficByCountry: { country: string; visits: number; percentage: number }[]
+  gaPropertyId?: string | null
+  gscSiteUrl?: string | null
 }
 
 export type Product = {
@@ -85,6 +97,20 @@ export type Document = {
   uploadedAt: string
   projectId: string
   fileUrl: string | null
+}
+
+export type StripeInvoice = {
+  id: string
+  number: string | null
+  status: string | null
+  amountDue: number
+  amountPaid: number
+  currency: string
+  created: string
+  dueDate: string | null
+  hostedUrl: string | null
+  pdfUrl: string | null
+  description: string | null
 }
 
 export type TimeSlot = {

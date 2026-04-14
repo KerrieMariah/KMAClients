@@ -12,9 +12,13 @@ import {
   Pencil,
   Trash2,
   ExternalLink,
+  Phone,
+  Check,
+  X,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ProjectForm } from "@/components/admin/project-form"
@@ -31,6 +35,7 @@ interface ClientDetailProps {
       avatarUrl: string | null
       isAdmin: boolean
       createdAt: string
+      emergencyPhone: string | null
     }
     projects: any[]
     websites: any[]
@@ -52,6 +57,28 @@ export function ClientDetail({ client, onBack, onRefresh }: ClientDetailProps) {
   const [deleting, setDeleting] = useState<string | null>(null)
 
   const { profile, projects, websites, billingItems = [], documents, bookings } = client
+
+  const [editingPhone, setEditingPhone] = useState(false)
+  const [phoneValue, setPhoneValue] = useState(profile.emergencyPhone ?? "")
+  const [savingPhone, setSavingPhone] = useState(false)
+
+  const handleSavePhone = async () => {
+    setSavingPhone(true)
+    try {
+      const res = await fetch("/api/admin/profiles", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: profile.id, emergency_phone: phoneValue || null }),
+      })
+      if (!res.ok) throw new Error()
+      setEditingPhone(false)
+      onRefresh()
+    } catch {
+      alert("Failed to save")
+    } finally {
+      setSavingPhone(false)
+    }
+  }
 
   const handleDelete = async (table: string, id: string) => {
     if (!confirm("Are you sure you want to delete this?")) return
@@ -130,6 +157,43 @@ export function ClientDetail({ client, onBack, onRefresh }: ClientDetailProps) {
         ))}
       </div>
 
+      {/* Emergency Phone */}
+      <Card>
+        <CardContent className="flex items-center gap-3 py-4">
+          <div className="rounded-lg bg-destructive/10 p-2">
+            <Phone className="size-4 text-destructive" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-muted-foreground">Priority Line</p>
+            {editingPhone ? (
+              <div className="flex items-center gap-2 mt-1">
+                <Input
+                  value={phoneValue}
+                  onChange={(e) => setPhoneValue(e.target.value)}
+                  placeholder="+1 (555) 123-4567"
+                  className="h-8 text-sm max-w-[200px]"
+                />
+                <Button size="sm" variant="ghost" className="size-8 p-0" onClick={handleSavePhone} disabled={savingPhone}>
+                  <Check className="size-4 text-success" />
+                </Button>
+                <Button size="sm" variant="ghost" className="size-8 p-0" onClick={() => { setEditingPhone(false); setPhoneValue(profile.emergencyPhone ?? "") }}>
+                  <X className="size-4 text-muted-foreground" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold text-foreground">
+                  {profile.emergencyPhone || "Not set"}
+                </p>
+                <Button size="sm" variant="ghost" className="size-6 p-0" onClick={() => setEditingPhone(true)}>
+                  <Pencil className="size-3 text-muted-foreground" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Projects */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
@@ -152,7 +216,7 @@ export function ClientDetail({ client, onBack, onRefresh }: ClientDetailProps) {
                   )}
                   <div className="min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">{p.name}</p>
-                    <p className="text-xs text-muted-foreground">{p.progress}% complete</p>
+                    <p className="text-xs text-muted-foreground">{p.stage ?? "Draft"}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

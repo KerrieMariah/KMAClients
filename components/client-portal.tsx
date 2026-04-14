@@ -29,6 +29,7 @@ import type {
   Subscription,
   Document,
   BillingItem,
+  StripeInvoice,
 } from "@/lib/mock-data"
 
 export type PortalData = {
@@ -39,12 +40,14 @@ export type PortalData = {
     company: string
     avatar: string
     isAdmin?: boolean
+    emergencyPhone?: string | null
   }
   projects: Project[]
   websites: Website[]
   billingItems: BillingItem[]
   subscription: Subscription | null
   documents: Document[]
+  stripeInvoices: StripeInvoice[]
 }
 
 const sectionTitles: Record<string, string> = {
@@ -84,7 +87,7 @@ export function ClientPortal({ data }: { data: PortalData }) {
       return (
         <ProjectDetailView
           project={data.projects.find((p) => p.id === selectedProjectId)!}
-          documents={data.documents.filter((d) => d.projectId === selectedProjectId)}
+          documents={data.documents.filter((d) => d.projectId === selectedProjectId && d.type !== "invoice")}
           onBack={handleBackToProjects}
         />
       )
@@ -118,14 +121,14 @@ export function ClientPortal({ data }: { data: PortalData }) {
         return (
           <SubscriptionView
             billingItems={data.billingItems}
-            invoices={data.documents.filter((d) => d.type === "invoice")}
+            stripeInvoices={data.stripeInvoices}
             onNavigate={handleNavigate}
           />
         )
       case "documents":
         return (
           <DocumentsView
-            documents={data.documents}
+            documents={data.documents.filter((d) => d.type !== "invoice")}
             projects={data.projects}
           />
         )

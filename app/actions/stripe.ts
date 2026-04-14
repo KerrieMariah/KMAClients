@@ -18,7 +18,14 @@ export async function createCheckoutSession(billingItemId: string) {
 
   if (!item || !item.stripe_price_id) throw new Error("No Stripe price configured for this item")
 
-  let customerId = item.stripe_customer_id
+  // Prefer the customer ID from the user's profile
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("stripe_customer_id")
+    .eq("id", user.id)
+    .single()
+
+  let customerId = profile?.stripe_customer_id ?? item.stripe_customer_id
 
   if (!customerId) {
     const customer = await stripe.customers.create({
@@ -27,6 +34,14 @@ export async function createCheckoutSession(billingItemId: string) {
     })
     customerId = customer.id
 
+    await supabase
+      .from("profiles")
+      .update({ stripe_customer_id: customerId })
+      .eq("id", user.id)
+  }
+
+  // Keep billing_items in sync for backward compat
+  if (item.stripe_customer_id !== customerId) {
     await supabase
       .from("billing_items")
       .update({ stripe_customer_id: customerId })
@@ -58,14 +73,24 @@ export async function createPortalSession() {
   } = await supabase.auth.getUser()
   if (!user) throw new Error("Not authenticated")
 
-  const { data: items } = await supabase
-    .from("billing_items")
+  const { data: profile } = await supabase
+    .from("profiles")
     .select("stripe_customer_id")
-    .eq("user_id", user.id)
-    .not("stripe_customer_id", "is", null)
-    .limit(1)
+    .eq("id", user.id)
+    .single()
 
-  const customerId = items?.[0]?.stripe_customer_id
+  // Fall back to billing_items for older users
+  let customerId = profile?.stripe_customer_id
+  if (!customerId) {
+    const { data: items } = await supabase
+      .from("billing_items")
+      .select("stripe_customer_id")
+      .eq("user_id", user.id)
+      .not("stripe_customer_id", "is", null)
+      .limit(1)
+    customerId = items?.[0]?.stripe_customer_id
+  }
+
   if (!customerId) throw new Error("No Stripe customer found")
 
   const session = await stripe.billingPortal.sessions.create({

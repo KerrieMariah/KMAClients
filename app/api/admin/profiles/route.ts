@@ -1,7 +1,7 @@
 import { verifyAdmin } from "@/lib/admin-auth"
 import { NextResponse, type NextRequest } from "next/server"
 
-const ALLOWED_FIELDS = ["full_name", "company", "avatar_url"] as const
+const ALLOWED_FIELDS = ["full_name", "company", "avatar_url", "emergency_phone"] as const
 
 export async function PATCH(request: NextRequest) {
   const { error, supabase } = await verifyAdmin()

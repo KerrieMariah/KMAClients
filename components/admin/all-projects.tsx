@@ -4,13 +4,13 @@ import { useState, useEffect } from "react"
 import { Loader2, FolderKanban } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { PROJECT_STAGES } from "@/lib/mock-data"
 
 interface ProjectRow {
   id: string
   name: string
   status: string
-  progress: number
+  stage: string | null
   start_date: string | null
   estimated_end: string | null
   technologies: string[]
@@ -79,10 +79,9 @@ export function AllProjects({ onSelectClient }: { onSelectClient?: (id: string) 
                     {p.profiles?.company ? ` · ${p.profiles.company}` : ""}
                   </p>
                 </div>
-                <div className="flex items-center gap-3 shrink-0 w-40">
-                  <Progress value={p.progress} className="flex-1 h-1.5" />
-                  <span className="text-xs font-semibold text-foreground w-8 text-right">{p.progress}%</span>
-                </div>
+                <span className="text-xs font-medium text-muted-foreground shrink-0">
+                  {PROJECT_STAGES.find((s) => s.value === p.stage)?.label ?? "Draft"}
+                </span>
                 {p.start_date && (
                   <span className="text-xs text-muted-foreground shrink-0 hidden sm:block">
                     {new Date(p.start_date).toLocaleDateString("en-US", { month: "short", year: "numeric" })}

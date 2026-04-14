@@ -13,9 +13,8 @@ import {
   Receipt,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
-import type { Project, Document } from "@/lib/mock-data"
+import { PROJECT_STAGES, type Project, type Document } from "@/lib/mock-data"
 import Image from "next/image"
 
 const statusConfig = {
@@ -87,11 +86,36 @@ export function ProjectDetailView({
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <Progress value={project.progress} className="flex-1 h-2" />
-          <span className="text-lg font-semibold text-foreground shrink-0">
-            {project.progress}%
-          </span>
+        <div className="flex items-center gap-2 flex-wrap">
+          {PROJECT_STAGES.map((stage, i) => {
+            const currentIndex = PROJECT_STAGES.findIndex((s) => s.value === project.stage)
+            const isCompleted = i < currentIndex
+            const isCurrent = i === currentIndex
+
+            return (
+              <div key={stage.value} className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`size-3 rounded-full shrink-0 ${
+                      isCompleted
+                        ? "bg-success"
+                        : isCurrent
+                        ? "bg-accent ring-2 ring-accent/30"
+                        : "bg-border"
+                    }`}
+                  />
+                  <span className={`text-sm whitespace-nowrap ${
+                    isCurrent ? "font-semibold text-foreground" : isCompleted ? "text-muted-foreground" : "text-muted-foreground/50"
+                  }`}>
+                    {stage.label}
+                  </span>
+                </div>
+                {i < PROJECT_STAGES.length - 1 && (
+                  <div className={`h-0.5 w-6 ${i < currentIndex ? "bg-success" : "bg-border"}`} />
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
 
@@ -108,7 +132,7 @@ export function ProjectDetailView({
         </span>
         <span className="flex items-center gap-1.5">
           <Clock className="size-3.5" />
-          Est. completion {new Date(project.estimatedEnd).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+          Est. website completion  {new Date(project.estimatedEnd).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
         </span>
         {project.technologies.length > 0 && (
           <div className="flex items-center gap-1.5 flex-wrap">

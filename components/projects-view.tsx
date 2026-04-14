@@ -3,8 +3,7 @@
 import { CheckCircle2, Clock, Pause, Zap, Calendar, ArrowRight } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import type { Project } from "@/lib/mock-data"
+import { PROJECT_STAGES, type Project } from "@/lib/mock-data"
 import Image from "next/image"
 
 const statusConfig = {
@@ -30,6 +29,37 @@ const statusConfig = {
   },
 }
 
+function StageTracker({ currentStage }: { currentStage: string }) {
+  const currentIndex = PROJECT_STAGES.findIndex((s) => s.value === currentStage)
+
+  return (
+    <div className="flex items-center gap-1">
+      {PROJECT_STAGES.map((stage, i) => {
+        const isCompleted = i < currentIndex
+        const isCurrent = i === currentIndex
+
+        return (
+          <div key={stage.value} className="flex items-center gap-1">
+            <div
+              className={`size-2 rounded-full transition-colors ${
+                isCompleted
+                  ? "bg-success"
+                  : isCurrent
+                  ? "bg-accent"
+                  : "bg-border"
+              }`}
+              title={stage.label}
+            />
+            {i < PROJECT_STAGES.length - 1 && (
+              <div className={`h-0.5 w-3 ${i < currentIndex ? "bg-success" : "bg-border"}`} />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export function ProjectsView({
   projects,
   onSelectProject,
@@ -52,6 +82,7 @@ export function ProjectsView({
         {projects.map((project) => {
           const config = statusConfig[project.status]
           const StatusIcon = config.icon
+          const stageLabel = PROJECT_STAGES.find((s) => s.value === project.stage)?.label ?? "Draft"
 
           return (
             <Card
@@ -121,16 +152,13 @@ export function ProjectsView({
                           ))}
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1.5 shrink-0">
-                        <span className="text-2xl font-semibold text-foreground">
-                          {project.progress}%
+                      <div className="flex flex-col items-end gap-2 shrink-0">
+                        <span className="text-sm font-medium text-foreground">
+                          {stageLabel}
                         </span>
-                        <span className="text-xs text-muted-foreground">Complete</span>
+                        <StageTracker currentStage={project.stage} />
                         <ArrowRight className="mt-2 size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
-                    </div>
-                    <div className="mt-5">
-                      <Progress value={project.progress} className="h-1.5" />
                     </div>
                   </div>
                 </div>

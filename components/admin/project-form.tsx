@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { FileUpload } from "@/components/admin/file-upload"
+import { PROJECT_STAGES } from "@/lib/mock-data"
 
 interface ProjectFormProps {
   open: boolean
@@ -31,7 +32,7 @@ interface ProjectFormProps {
     name: string
     description: string
     status: string
-    progress: number
+    stage: string | null
     start_date: string | null
     estimated_end: string | null
     technologies: string[]
@@ -48,7 +49,7 @@ export function ProjectForm({ open, onClose, onSuccess, clientId, project }: Pro
   const [name, setName] = useState(project?.name ?? "")
   const [description, setDescription] = useState(project?.description ?? "")
   const [status, setStatus] = useState(project?.status ?? "active")
-  const [progress, setProgress] = useState(project?.progress ?? 0)
+  const [stage, setStage] = useState(project?.stage ?? "draft")
   const [startDate, setStartDate] = useState(project?.start_date ?? "")
   const [estimatedEnd, setEstimatedEnd] = useState(project?.estimated_end ?? "")
   const [techInput, setTechInput] = useState("")
@@ -74,7 +75,7 @@ export function ProjectForm({ open, onClose, onSuccess, clientId, project }: Pro
       name,
       description,
       status,
-      progress,
+      stage,
       start_date: startDate || null,
       estimated_end: estimatedEnd || null,
       technologies,
@@ -131,15 +132,15 @@ export function ProjectForm({ open, onClose, onSuccess, clientId, project }: Pro
             </div>
 
             <div className="space-y-2">
-              <Label>Progress ({progress}%)</Label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={progress}
-                onChange={(e) => setProgress(Number(e.target.value))}
-                className="w-full accent-accent"
-              />
+              <Label>Stage</Label>
+              <Select value={stage} onValueChange={setStage}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PROJECT_STAGES.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

@@ -91,6 +91,7 @@ export async function getClientById(clientId: string) {
       avatarUrl: profile.avatar_url,
       isAdmin: profile.is_admin ?? false,
       createdAt: profile.created_at,
+      emergencyPhone: profile.emergency_phone ?? null,
     },
     projects: projects ?? [],
     websites: websites ?? [],
