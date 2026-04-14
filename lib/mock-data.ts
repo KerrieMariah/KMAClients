@@ -134,7 +134,7 @@ export const projects: Project[] = [
     description:
       "Complete redesign and rebuild of the online store with modern UX patterns, improved checkout flow, and mobile-first approach. We are focused on improving conversion rates and delivering a seamless shopping experience across all devices.",
     status: "in-progress",
-    progress: 68,
+    stage: "build_complete",
     startDate: "2025-11-01",
     estimatedEnd: "2026-03-15",
     technologies: ["Next.js", "Stripe", "Tailwind CSS", "PostgreSQL"],
@@ -155,7 +155,7 @@ export const projects: Project[] = [
     description:
       "Portfolio and brand showcase website with CMS integration for easy content management. This project establishes a strong digital presence with a focus on storytelling, visual impact, and SEO optimization.",
     status: "active",
-    progress: 45,
+    stage: "review",
     startDate: "2026-01-10",
     estimatedEnd: "2026-04-20",
     technologies: ["React", "Sanity CMS", "Framer Motion"],
@@ -175,7 +175,7 @@ export const projects: Project[] = [
     description:
       "Custom analytics dashboard for tracking business KPIs and customer engagement metrics. This tool provides real-time insights into business performance with customizable reports and data visualization.",
     status: "completed",
-    progress: 100,
+    stage: "seo_ongoing",
     startDate: "2025-08-01",
     estimatedEnd: "2025-10-30",
     technologies: ["Next.js", "D3.js", "Supabase"],

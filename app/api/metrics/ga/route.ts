@@ -34,6 +34,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "GA not configured for this site" }, { status: 404 })
   }
 
+  const gaProperty = String(website.ga_property_id)
+
   try {
     const auth = getGoogleAuth()
     const analyticsData = google.analyticsdata({ version: "v1beta", auth })
@@ -49,7 +51,7 @@ export async function GET(request: NextRequest) {
     // Current period
     const [currentReport, prevReport, pagesReport, channelsReport] = await Promise.all([
       analyticsData.properties.runReport({
-        property: website.ga_property_id,
+        property: gaProperty,
         requestBody: {
           dateRanges: [{ startDate: fmt(thirtyDaysAgo), endDate: fmt(today) }],
           metrics: [
@@ -63,7 +65,7 @@ export async function GET(request: NextRequest) {
       }),
       // Previous period for comparison
       analyticsData.properties.runReport({
-        property: website.ga_property_id,
+        property: gaProperty,
         requestBody: {
           dateRanges: [{ startDate: fmt(sixtyDaysAgo), endDate: fmt(thirtyDaysAgo) }],
           metrics: [
@@ -75,23 +77,23 @@ export async function GET(request: NextRequest) {
       }),
       // Top pages
       analyticsData.properties.runReport({
-        property: website.ga_property_id,
+        property: gaProperty,
         requestBody: {
           dateRanges: [{ startDate: fmt(thirtyDaysAgo), endDate: fmt(today) }],
           dimensions: [{ name: "pagePath" }],
           metrics: [{ name: "screenPageViews" }, { name: "totalUsers" }],
-          limit: 5,
+          limit: "5",
           orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }],
         },
       }),
       // Traffic channels
       analyticsData.properties.runReport({
-        property: website.ga_property_id,
+        property: gaProperty,
         requestBody: {
           dateRanges: [{ startDate: fmt(thirtyDaysAgo), endDate: fmt(today) }],
           dimensions: [{ name: "sessionDefaultChannelGroup" }],
           metrics: [{ name: "sessions" }],
-          limit: 6,
+          limit: "6",
           orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
         },
       }),

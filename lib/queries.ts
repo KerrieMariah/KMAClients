@@ -192,8 +192,8 @@ export async function getStripeInvoices(): Promise<StripeInvoice[]> {
       currency: inv.currency,
       created: new Date(inv.created * 1000).toISOString(),
       dueDate: inv.due_date ? new Date(inv.due_date * 1000).toISOString() : null,
-      hostedUrl: inv.hosted_invoice_url,
-      pdfUrl: inv.invoice_pdf,
+      hostedUrl: inv.hosted_invoice_url ?? null,
+      pdfUrl: inv.invoice_pdf ?? null,
       description: inv.description ?? inv.lines.data[0]?.description ?? null,
     }))
   } catch (err) {
