@@ -38,11 +38,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-svh">
-      {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden">
+    <div className="relative flex min-h-svh">
+      {/* Video background — full-screen on mobile, left half on desktop */}
+      <div className="absolute inset-0 lg:relative lg:w-1/2 lg:flex flex-col justify-between p-12 overflow-hidden">
         <video
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 min-w-full min-h-full w-auto h-auto object-cover"
           src="/background.mp4"
           autoPlay
           loop
@@ -51,8 +51,7 @@ export default function LoginPage() {
         />
         <div className="absolute inset-0 bg-black/30" />
 
-        <div className="relative z-10 flex flex-col gap-8">
-          
+        <div className="relative z-10 hidden lg:flex flex-col gap-8">
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-start leading-none">
               <span className="text-2xl font-extrabold text-accent tracking-wider">KMA</span>
@@ -61,7 +60,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="relative z-10 max-w-md">
+        <div className="relative z-10 hidden lg:block max-w-md">
           <h1 className="font-serif text-4xl leading-tight text-white text-balance">
             Your projects, organized and accessible.
           </h1>
@@ -71,7 +70,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="relative z-10 flex items-center gap-8">
+        <div className="relative z-10 hidden lg:flex items-center gap-8">
           <div className="flex flex-col">
             <span className="text-base font-semibold text-white leading-tight">Concierge</span>
             <span className="text-xs text-white/50 uppercase tracking-wider mt-1">Tech Service</span>
@@ -90,7 +89,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right side - Login form */}
-      <div className="flex w-full flex-1 flex-col items-center justify-center bg-background px-6 lg:w-1/2">
+      <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center px-6 lg:w-1/2 lg:bg-background">
         <div className="lg:hidden mb-10 flex items-center gap-3">
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-start leading-none">
@@ -100,7 +99,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-sm rounded-2xl bg-white/95 backdrop-blur-sm p-8 shadow-xl lg:rounded-none lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
           <div className="mb-8">
             <h2 className="font-serif text-2xl font-semibold text-foreground">
               Welcome back
