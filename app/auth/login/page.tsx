@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -14,8 +14,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [videoReady, setVideoReady] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  // If the video is already buffered (cached / fast network) by the time React
+  // attaches, we won't get a `canplay` event — sync state once on mount.
+  useEffect(() => {
+    if (videoRef.current && videoRef.current.readyState >= 3) {
+      setVideoReady(true)
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,14 +50,30 @@ export default function LoginPage() {
   return (
     <div className="relative flex min-h-svh">
       {/* Video background — full-screen on mobile, left half on desktop */}
-      <div className="absolute inset-0 lg:relative lg:w-1/2 lg:flex flex-col justify-between p-12 overflow-hidden">
+      <div className="absolute inset-0 lg:relative lg:w-1/2 lg:flex flex-col justify-between p-12 overflow-hidden bg-[radial-gradient(ellipse_at_30%_60%,#1e3a5f_0%,#0a1426_50%,#000_100%)]">
+        {/* Poster image: mobile gets background.png, desktop gets the wider
+            background-desktop.png crop. On desktop it sits under the video and
+            fades out once the video can play. */}
+        <picture>
+          <source media="(min-width: 1024px)" srcSet="/background-desktop.png" />
+          <img
+            src="/background.png"
+            alt=""
+            aria-hidden="true"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${videoReady ? "opacity-100 lg:opacity-0" : "opacity-100"}`}
+          />
+        </picture>
         <video
-          className="absolute inset-0 min-w-full min-h-full w-auto h-auto object-cover"
+          ref={videoRef}
+          className={`absolute inset-0 min-w-full min-h-full w-auto h-auto object-cover hidden lg:block transition-opacity duration-700 ${videoReady ? "opacity-100" : "opacity-0"}`}
           src="/background.mp4"
+          poster="/background-desktop.png"
           autoPlay
           loop
           muted
           playsInline
+          preload="auto"
+          onCanPlay={() => setVideoReady(true)}
         />
         <div className="absolute inset-0 bg-black/30" />
 
