@@ -12,6 +12,7 @@ import {
   Phone,
   Mail,
   ShieldAlert,
+  ExternalLink,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -42,6 +43,21 @@ export function DashboardView({
   const onlineCount = websites.filter((w) => w.status === "online").length
   const nonInvoiceDocs = documents.filter((d) => d.type !== "invoice")
   const recentDocs = nonInvoiceDocs.slice(0, 3)
+  const billableItems = billingItems.filter((i) => i.status !== "cancelled")
+  const activePaymentCount = billableItems.filter(
+    (i) => i.status === "active" || i.status === "paid"
+  ).length
+  const paymentNeeded = billableItems.some(
+    (i) => i.status === "pending" || i.status === "past_due"
+  )
+  const hasProjects = activeProjects.length > 0
+  const hasWebsites = websites.length > 0
+  const statCount = 2 + (hasProjects ? 1 : 0) + (hasWebsites ? 1 : 0)
+  const statGridCols: Record<number, string> = {
+    2: "lg:grid-cols-2",
+    3: "lg:grid-cols-3",
+    4: "lg:grid-cols-4",
+  }
 
   const [greeting, setGreeting] = useState("Welcome")
   useEffect(() => {
@@ -67,38 +83,42 @@ export function DashboardView({
       </div>
 
       {/* Quick stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card
-          className="border-border bg-card shadow-none hover:shadow-sm transition-shadow cursor-pointer"
-          onClick={() => onNavigate("projects")}
-        >
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
-              <FolderKanban className="size-5 text-foreground" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-2xl font-semibold text-foreground">{activeProjects.length}</p>
-              <p className="text-xs text-muted-foreground">Active Projects</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className={`grid gap-4 sm:grid-cols-2 ${statGridCols[statCount]}`}>
+        {hasProjects && (
+          <Card
+            className="border-border bg-card shadow-none hover:shadow-sm transition-shadow cursor-pointer"
+            onClick={() => onNavigate("projects")}
+          >
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                <FolderKanban className="size-5 text-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-semibold text-foreground">{activeProjects.length}</p>
+                <p className="text-xs text-muted-foreground">Active Projects</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card
-          className="border-border bg-card shadow-none hover:shadow-sm transition-shadow cursor-pointer"
-          onClick={() => onNavigate("websites")}
-        >
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-success/10">
-              <Globe className="size-5 text-success" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-2xl font-semibold text-foreground">
-                {onlineCount}/{websites.length}
-              </p>
-              <p className="text-xs text-muted-foreground">Sites Online</p>
-            </div>
-          </CardContent>
-        </Card>
+        {hasWebsites && (
+          <Card
+            className="border-border bg-card shadow-none hover:shadow-sm transition-shadow cursor-pointer"
+            onClick={() => onNavigate("websites")}
+          >
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-success/10">
+                <Globe className="size-5 text-success" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-semibold text-foreground">
+                  {onlineCount}/{websites.length}
+                </p>
+                <p className="text-xs text-muted-foreground">Sites Online</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card
           className="border-border bg-card shadow-none hover:shadow-sm transition-shadow cursor-pointer"
@@ -108,13 +128,18 @@ export function DashboardView({
             <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent/10">
               <CreditCard className="size-5 text-accent" />
             </div>
-            <div className="min-w-0 overflow-hidden">
-              {billingItems.length > 0 ? (
+            <div className="relative min-w-0">
+              {billableItems.length > 0 ? (
                 <>
-                  <p className="text-2xl font-semibold text-foreground">{billingItems.length}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {billingItems.filter(i => i.status === "active" || i.status === "paid").length} active
+                  {paymentNeeded && (
+                    <p className="absolute bottom-full left-0 whitespace-nowrap text-[11px] font-medium uppercase tracking-wider text-destructive">
+                      Payment needed
+                    </p>
+                  )}
+                  <p className="text-2xl font-semibold text-foreground">
+                    {activePaymentCount}/{billableItems.length}
                   </p>
+                  <p className="text-xs text-muted-foreground">Active Payments</p>
                 </>
               ) : (
                 <>
@@ -144,82 +169,163 @@ export function DashboardView({
 
       {/* Projects + Recent activity */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Active Projects */}
-        <div className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
-              Active Projects
-            </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => onNavigate("projects")}
-            >
-              View all
-              <ArrowRight className="ml-1 size-3" />
-            </Button>
-          </div>
-          <div className="flex flex-col gap-3">
-            {activeProjects.length === 0 ? (
-              <Card className="border-border bg-card shadow-none">
-                <CardContent className="flex flex-col items-center justify-center p-12 text-center">
-                  <FolderKanban className="size-10 text-muted-foreground/30" />
-                  <p className="mt-3 text-sm text-muted-foreground">No active projects yet</p>
-                </CardContent>
-              </Card>
-            ) : (
-              activeProjects.map((project) => (
-                <Card
-                  key={project.id}
-                  className="border-border bg-card shadow-none hover:shadow-sm transition-shadow cursor-pointer group"
-                  onClick={() => onSelectProject(project.id)}
+        <div className="lg:col-span-2 flex flex-col gap-8">
+          {!hasProjects && !hasWebsites && (
+            <Card className="border-border bg-card shadow-none">
+              <CardContent className="flex flex-col items-center justify-center p-12 text-center">
+                <FolderKanban className="size-10 text-muted-foreground/30" />
+                <p className="mt-3 text-sm text-muted-foreground">
+                  No active projects, reach out to us below to get started
+                </p>
+                <Button
+                  className="mt-5 bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm"
+                  asChild
                 >
-                  <CardContent className="p-0">
-                    <div className="flex">
-                      {/* Project image */}
-                      <div className="relative w-28 shrink-0 overflow-hidden rounded-l-xl">
-                        <Image
-                          src={project.image}
-                          alt={project.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
+                  <a
+                    href={`mailto:kerrie@kerriemariah.com?subject=${encodeURIComponent(
+                      `New project enquiry from ${currentUser.name}`
+                    )}`}
+                  >
+                    <Mail className="mr-2 size-4" />
+                    Contact
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {hasProjects && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
+                  Active Projects
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => onNavigate("projects")}
+                >
+                  View all
+                  <ArrowRight className="ml-1 size-3" />
+                </Button>
+              </div>
+              <div className="flex flex-col gap-3">
+                {activeProjects.map((project) => (
+                  <Card
+                    key={project.id}
+                    className="border-border bg-card shadow-none hover:shadow-sm transition-shadow cursor-pointer group"
+                    onClick={() => onSelectProject(project.id)}
+                  >
+                    <CardContent className="p-0">
+                      <div className="flex">
+                        {/* Project image */}
+                        <div className="relative w-28 shrink-0 overflow-hidden rounded-l-xl">
+                          <Image
+                            src={project.image}
+                            alt={project.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0 p-4">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-medium text-foreground truncate">
+                              {project.name}
+                            </h3>
+                            <Badge
+                              variant="secondary"
+                              className={
+                                project.status === "in-progress"
+                                  ? "bg-accent/10 text-accent border-accent/20 shrink-0"
+                                  : "bg-success/10 text-success border-success/20 shrink-0"
+                              }
+                            >
+                              {project.status === "in-progress" ? (
+                                <Clock className="mr-1 size-3" />
+                              ) : (
+                                <CheckCircle2 className="mr-1 size-3" />
+                              )}
+                              {project.status}
+                            </Badge>
+                          </div>
+                          <p className="mt-1.5 text-xs text-muted-foreground line-clamp-1">
+                            {project.description}
+                          </p>
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            {PROJECT_STAGES.find((s) => s.value === project.stage)?.label ?? "Draft"}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0 p-4">
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {hasWebsites && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
+                  Your Websites
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => onNavigate("websites")}
+                >
+                  View all
+                  <ArrowRight className="ml-1 size-3" />
+                </Button>
+              </div>
+              <div className="flex flex-col gap-3">
+                {websites.map((website) => (
+                  <Card
+                    key={website.id}
+                    className="border-border bg-card shadow-none hover:shadow-sm transition-shadow cursor-pointer"
+                    onClick={() => onNavigate("websites")}
+                  >
+                    <CardContent className="flex items-center gap-4 p-4">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-success/10">
+                        <Globe className="size-5 text-success" />
+                      </div>
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h3 className="text-sm font-medium text-foreground truncate">
-                            {project.name}
+                            {website.name}
                           </h3>
                           <Badge
                             variant="secondary"
                             className={
-                              project.status === "in-progress"
-                                ? "bg-accent/10 text-accent border-accent/20 shrink-0"
-                                : "bg-success/10 text-success border-success/20 shrink-0"
+                              website.status === "online"
+                                ? "bg-success/10 text-success border-success/20 shrink-0"
+                                : website.status === "maintenance"
+                                  ? "bg-accent/10 text-accent border-accent/20 shrink-0"
+                                  : "bg-destructive/10 text-destructive border-destructive/20 shrink-0"
                             }
                           >
-                            {project.status === "in-progress" ? (
-                              <Clock className="mr-1 size-3" />
-                            ) : (
-                              <CheckCircle2 className="mr-1 size-3" />
-                            )}
-                            {project.status}
+                            {website.status}
                           </Badge>
                         </div>
-                        <p className="mt-1.5 text-xs text-muted-foreground line-clamp-1">
-                          {project.description}
-                        </p>
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          {PROJECT_STAGES.find((s) => s.value === project.stage)?.label ?? "Draft"}
-                        </p>
+                        <a
+                          href={website.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground truncate"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {website.url.replace(/^https?:\/\//, "")}
+                          <ExternalLink className="size-3 shrink-0" />
+                        </a>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sidebar: Recent Docs + Quick Actions */}
