@@ -2,6 +2,7 @@
 
 import { stripe } from "@/lib/stripe"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 
 export async function createCheckoutSession(billingItemId: string) {
   const supabase = await createClient()
@@ -14,6 +15,7 @@ export async function createCheckoutSession(billingItemId: string) {
     .from("billing_items")
     .select("*")
     .eq("id", billingItemId)
+    .eq("user_id", user.id)
     .single()
 
   if (!item || !item.stripe_price_id) throw new Error("No Stripe price configured for this item")
@@ -26,6 +28,7 @@ export async function createCheckoutSession(billingItemId: string) {
     .single()
 
   let customerId = profile?.stripe_customer_id ?? item.stripe_customer_id
+  const admin = createAdminClient()
 
   if (!customerId) {
     const customer = await stripe.customers.create({
@@ -34,7 +37,7 @@ export async function createCheckoutSession(billingItemId: string) {
     })
     customerId = customer.id
 
-    await supabase
+    await admin
       .from("profiles")
       .update({ stripe_customer_id: customerId })
       .eq("id", user.id)
@@ -42,7 +45,7 @@ export async function createCheckoutSession(billingItemId: string) {
 
   // Keep billing_items in sync for backward compat
   if (item.stripe_customer_id !== customerId) {
-    await supabase
+    await admin
       .from("billing_items")
       .update({ stripe_customer_id: customerId })
       .eq("id", billingItemId)
@@ -121,10 +124,11 @@ export async function cancelBillingItem(billingItemId: string) {
     cancel_at_period_end: true,
   })
 
-  await supabase
+  await createAdminClient()
     .from("billing_items")
     .update({ status: "cancelled" })
     .eq("id", billingItemId)
+    .eq("user_id", user.id)
 
   return { success: true }
 }
@@ -149,10 +153,11 @@ export async function reactivateBillingItem(billingItemId: string) {
     cancel_at_period_end: false,
   })
 
-  await supabase
+  await createAdminClient()
     .from("billing_items")
     .update({ status: "active" })
     .eq("id", billingItemId)
+    .eq("user_id", user.id)
 
   return { success: true }
 }

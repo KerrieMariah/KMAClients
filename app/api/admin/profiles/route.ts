@@ -1,4 +1,5 @@
 import { verifyAdmin } from "@/lib/admin-auth"
+import { dbErrorResponse } from "@/lib/api-errors"
 import { NextResponse, type NextRequest } from "next/server"
 
 const ALLOWED_FIELDS = ["full_name", "company", "avatar_url", "emergency_phone"] as const
@@ -17,6 +18,6 @@ export async function PATCH(request: NextRequest) {
   }
 
   const { data, error: dbError } = await supabase!.from("profiles").update(updates).eq("id", id).select().single()
-  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 400 })
+  if (dbError) return dbErrorResponse(dbError)
   return NextResponse.json(data)
 }

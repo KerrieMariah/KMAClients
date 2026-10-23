@@ -1,4 +1,5 @@
 import { verifyAdmin } from "@/lib/admin-auth"
+import { dbErrorResponse } from "@/lib/api-errors"
 import { NextResponse, type NextRequest } from "next/server"
 import { z } from "zod"
 
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
     .select()
     .single()
 
-  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 400 })
+  if (dbError) return dbErrorResponse(dbError)
   return NextResponse.json(data)
 }
 
@@ -61,7 +62,7 @@ export async function PATCH(request: NextRequest) {
     .select()
     .single()
 
-  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 400 })
+  if (dbError) return dbErrorResponse(dbError)
   return NextResponse.json(data)
 }
 
@@ -74,6 +75,6 @@ export async function DELETE(request: NextRequest) {
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 })
 
   const { error: dbError } = await supabase!.from("projects").delete().eq("id", id)
-  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 400 })
+  if (dbError) return dbErrorResponse(dbError)
   return NextResponse.json({ success: true })
 }

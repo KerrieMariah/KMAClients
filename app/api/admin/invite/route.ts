@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js"
 import { stripe } from "@/lib/stripe"
 import { NextResponse, type NextRequest } from "next/server"
 import { z } from "zod"
+import { randomBytes } from "crypto"
 
 const inviteSchema = z.object({
   email: z.string().email("Valid email is required"),
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
 
   const finalPassword = password?.trim()
     ? password.trim()
-    : `Temp${Math.random().toString(36).substring(2, 10)}!${Date.now().toString(36)}`
+    : `Temp-${randomBytes(12).toString("base64url")}!`
 
   // Use the service role admin client so the admin's session is never touched
   const adminClient = createServiceRoleClient()
@@ -54,7 +55,12 @@ export async function POST(request: NextRequest) {
   })
 
   if (authError) {
-    return NextResponse.json({ error: authError.message }, { status: 400 })
+    console.error("Invite createUser error:", authError)
+    const message =
+      authError.code === "email_exists" || authError.code === "user_already_exists"
+        ? "A user with this email already exists."
+        : "Could not create the client account. Please try again."
+    return NextResponse.json({ error: message }, { status: 400 })
   }
 
   if (authData.user) {

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { dbErrorResponse } from "@/lib/api-errors"
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     .single()
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return dbErrorResponse(error, 500, "Could not create booking. Please try again.")
   }
 
   return NextResponse.json({ booking: data })

@@ -1,4 +1,5 @@
 import { verifyAdmin } from "@/lib/admin-auth"
+import { dbErrorResponse } from "@/lib/api-errors"
 import { NextResponse } from "next/server"
 
 const ALLOWED_STATUSES = ["active", "cancelled", "past_due", "paid", "pending"] as const
@@ -24,7 +25,7 @@ export async function PATCH(request: Request) {
     .eq("user_id", user_id)
 
   if (dbError) {
-    return NextResponse.json({ error: dbError.message }, { status: 500 })
+    return dbErrorResponse(dbError, 500)
   }
 
   return NextResponse.json({ success: true })

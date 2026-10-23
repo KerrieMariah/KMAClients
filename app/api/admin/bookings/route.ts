@@ -1,4 +1,5 @@
 import { verifyAdmin } from "@/lib/admin-auth"
+import { dbErrorResponse } from "@/lib/api-errors"
 import { NextResponse, type NextRequest } from "next/server"
 
 const ALLOWED_BOOKING_FIELDS = ["status", "date", "time", "call_type", "notes"] as const
@@ -17,7 +18,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   const { data, error: dbError } = await supabase!.from("bookings").update(updates).eq("id", id).select().single()
-  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 400 })
+  if (dbError) return dbErrorResponse(dbError)
   return NextResponse.json(data)
 }
 
@@ -29,6 +30,6 @@ export async function DELETE(request: NextRequest) {
   const id = searchParams.get("id")
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 })
   const { error: dbError } = await supabase!.from("bookings").delete().eq("id", id)
-  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 400 })
+  if (dbError) return dbErrorResponse(dbError)
   return NextResponse.json({ success: true })
 }

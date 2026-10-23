@@ -1,4 +1,5 @@
 import { verifyAdmin } from "@/lib/admin-auth"
+import { dbErrorResponse } from "@/lib/api-errors"
 import Stripe from "stripe"
 import { stripe } from "@/lib/stripe"
 import { NextResponse, type NextRequest } from "next/server"
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
     .select()
     .single()
 
-  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 400 })
+  if (dbError) return dbErrorResponse(dbError)
   return NextResponse.json(data)
 }
 
@@ -142,7 +143,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   const { data, error: dbError } = await supabase!.from("billing_items").update(updates).eq("id", id).select().single()
-  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 400 })
+  if (dbError) return dbErrorResponse(dbError)
   return NextResponse.json(data)
 }
 
@@ -154,6 +155,6 @@ export async function DELETE(request: NextRequest) {
   const id = searchParams.get("id")
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 })
   const { error: dbError } = await supabase!.from("billing_items").delete().eq("id", id)
-  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 400 })
+  if (dbError) return dbErrorResponse(dbError)
   return NextResponse.json({ success: true })
 }

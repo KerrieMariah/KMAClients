@@ -1,4 +1,5 @@
 import { verifyAdmin } from "@/lib/admin-auth"
+import { dbErrorResponse } from "@/lib/api-errors"
 import { NextResponse, type NextRequest } from "next/server"
 
 export async function POST(request: NextRequest) {
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
     })
 
   if (uploadError) {
-    return NextResponse.json({ error: uploadError.message }, { status: 400 })
+    return dbErrorResponse(uploadError, 400, "Upload failed. Please try again.")
   }
 
   if (bucket === "project-images") {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
     const { data: urlData, error: signError } = await supabase!.storage
       .from(bucket)
       .createSignedUrl(filePath, 60 * 60 * 24 * 365)
-    if (signError) return NextResponse.json({ error: signError.message }, { status: 400 })
+    if (signError) return dbErrorResponse(signError, 400, "Upload failed. Please try again.")
     return NextResponse.json({ url: urlData.signedUrl })
   }
 }
